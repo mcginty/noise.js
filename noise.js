@@ -1,0 +1,85 @@
+/**
+* noise.js
+* simple, speedy, moddy ambient noise generation.
+*/
+var noise = noise || {};
+(function(window, document, undefined) {
+    noise.ColorNoise = function() {
+        var self = this;
+
+        // states
+        this.active = false;
+
+        // default values
+        this.alpha = 1;
+        this.poles = 5;
+
+        // private variables
+        this.multipliers = [];
+        this.values = [];
+    };
+
+    noise.ColorNoise.prototype = {
+        initialize : function(options) {
+            var self = this;
+            if (options) {
+                if ("alpha" in options) {
+                    this.alpha = options.alpha;
+                }
+
+                if ("poles" in options) {
+                    this.poles = options.poles;
+                }
+            }
+
+            // ArrayBuffer of double-precision floating point numbers
+            this.values = new Float64Array(new ArrayBuffer(8*this.poles));
+            for (var i=0; i<this.poles; i++) {
+                this.values[i] = 0;
+            }
+
+            var a = 1.0;
+
+            for (var i=0; i<this.poles; i++) {
+                a = (i - this.alpha/2) * a / (i+1);
+                this.multipliers[i] = a;
+            }
+
+            // Fill in the history with random values
+            for (var i=0; i<5*this.poles; i++) {
+                this.nextValue();
+            }
+            context = new webkitAudioContext();
+            source = context.createBufferSource();
+            source.buffer = this.values.buffer;
+            gain = context.createGainNode();
+            gain.gain.value = 1.0;
+            source.connect(gain);
+            gain.connect(context.destination);
+            source.looping = true;
+            source.noteOn(0);
+
+            this.context = context;
+            this.gain = gain;
+            this.source = source;
+        },
+
+        nextValue : function() {
+            // TODO: add option for gaussian distribution
+            var x = Math.random() - 0.5;
+
+            for (var i=0; i < this.poles; i++) {
+                x -= this.multipliers[i] * this.values[i];
+            }
+
+            // Delete the last value
+            for (var i=this.poles-1; i>0; i--) {
+                this.values[i] = this.values[i-1];
+            }
+
+            // Insert x into beginning of array
+            this.values[0] = x;
+            return x;
+        }
+    };
+})(this,this.document);
