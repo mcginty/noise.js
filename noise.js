@@ -1,6 +1,8 @@
 /**
 * noise.js
 * simple, speedy, moddy ambient noise generation.
+*
+* pink noise generation based off of http://sampo.kapsi.fi/PinkNoise/
 */
 var noise = noise || {};
 (function(window, document, undefined) {
@@ -32,14 +34,12 @@ var noise = noise || {};
                 }
             }
 
-            // ArrayBuffer of double-precision floating point numbers
-            this.values = new Float64Array(new ArrayBuffer(8*this.poles));
+            this.values = new Array(this.poles);
             for (var i=0; i<this.poles; i++) {
                 this.values[i] = 0;
             }
 
             var a = 1.0;
-
             for (var i=0; i<this.poles; i++) {
                 a = (i - this.alpha/2) * a / (i+1);
                 this.multipliers[i] = a;
@@ -49,22 +49,21 @@ var noise = noise || {};
             for (var i=0; i<5*this.poles; i++) {
                 this.nextValue();
             }
+
             context = new webkitAudioContext();
-            source = context.createBufferSource();
-            source.buffer = this.values.buffer;
+            var node = context.createJavaScriptNode(16384, 0, 1);
+            node.onaudioprocess = function(event) {self.gen(event)};
             gain = context.createGainNode();
             gain.gain.value = 1.0;
-            source.connect(gain);
+            node.connect(gain);
             gain.connect(context.destination);
-            source.looping = true;
-            source.noteOn(0);
 
             this.context = context;
             this.gain = gain;
-            this.source = source;
         },
 
         nextValue : function() {
+
             // TODO: add option for gaussian distribution
             var x = Math.random() - 0.5;
 
@@ -80,6 +79,18 @@ var noise = noise || {};
             // Insert x into beginning of array
             this.values[0] = x;
             return x;
+        },
+
+        gen : function(evt) {
+            var buffer = evt.outputBuffer;
+
+            for (var i=0; i<buffer.numberOfChannels; i++) {
+                var buf = evt.outputBuffer.getChannelData(i);
+                for (var j=0; j<buf.length; j++) {
+                    buf[j] = this.nextValue();
+                }
+            }
         }
+
     };
 })(this,this.document);
