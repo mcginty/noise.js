@@ -54,7 +54,7 @@ var noise = noise || {};
             var node = context.createJavaScriptNode(16384, 0, 1);
             node.onaudioprocess = function(event) {self.gen(event)};
             gain = context.createGainNode();
-            gain.gain.value = 1.0;
+            gain.gain.value = 0.5;
             node.connect(gain);
             gain.connect(context.destination);
 
