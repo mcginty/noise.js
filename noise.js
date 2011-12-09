@@ -12,13 +12,9 @@ var noise = noise || {};
         // states
         this.active = false;
 
-        // default values
-        this.alpha = 1;
-        this.poles = 5;
-
-        // private variables
-        this.multipliers = [];
-        this.values = [];
+        //TODO: move when separating lower-level audio libraries from specific synthesizers.
+        this.bufferSize = 16384; //bytes
+        this.sampleRate = 44100; //Hz
     };
 
     noise.ColorNoise.prototype = {
@@ -49,17 +45,7 @@ var noise = noise || {};
             for (var i=0; i<5*this.poles; i++) {
                 this.nextValue();
             }
-
-            context = new webkitAudioContext();
-            var node = context.createJavaScriptNode(16384, 0, 1);
-            node.onaudioprocess = function(event) {self.gen(event)};
-            gain = context.createGainNode();
-            gain.gain.value = 0.5;
-            node.connect(gain);
-            gain.connect(context.destination);
-
-            this.context = context;
-            this.gain = gain;
+            //var dev = audioLib.Sink(function(buf) { self.gen(buf); }, 1, self.bufferSize, self.sampleRate);
         },
 
         nextValue : function() {
@@ -81,14 +67,9 @@ var noise = noise || {};
             return x;
         },
 
-        gen : function(evt) {
-            var buffer = evt.outputBuffer;
-
-            for (var i=0; i<buffer.numberOfChannels; i++) {
-                var buf = evt.outputBuffer.getChannelData(i);
-                for (var j=0; j<buf.length; j++) {
-                    buf[j] = this.nextValue();
-                }
+        gen : function(sampleBuffer) {
+            for (var i=0; i<sampleBuffer.length; i++) {
+                sampleBuffer[i] = audioLib.Noise().brown();
             }
         }
 
