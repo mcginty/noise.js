@@ -14,29 +14,49 @@
         <footer>
         </footer>
 
-        <script type="text/javascript" src="../lib/audiolib.js/lib/audiolib.js"></script>
-        <script type="text/javascript" src="../noise.js"></script>
-        <script type="text/javascript" src="../binaural.js"></script>
+        <script type="text/javascript" src="../noise.min.js"></script>
         <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
         <script type="text/javascript" src="http://cdn.jquerytools.org/1.2.6/full/jquery.tools.min.js"></script>
         <script type="text/javascript">
+            var ui_active=false;
             $(":range").rangeinput({
-                onSlide: function(e,v) {
-                    noise.setVolume(v);
+                change: function(e,v) {
+                    if(ui_active) {
+                        noise.setVolume(v);
+                        last_userdef_volume = v;
+                    }
                 },
-                speed: 1000
+                onSlide: function(e,v) {
+                    if(ui_active) {
+                        noise.setVolume(v);
+                        last_userdef_volume = v;
+                        console.log("User changed value to " + v);
+                    }
+                },
+                speed: 1000//ms on click
             });
+            var volume_knob = $(":range").data("rangeinput")
+            $(".handle").mousedown(function() {ui_active = true;});
+            $(".handle").mouseup(function() {ui_active = false; oscillator.reset();});
+
+
             var noise = new Noise();
             noise.setVolume(75);
+            var last_userdef_volume = 75;
             noise.addSource(audioLib.Noise, "brown");
             noise.addSource(audioLib.Binaural, 200, 10);
 
-            $.ajax({
-                url: 'https://api.flattr.com/button/view/?url=http%3A%2F%2Fofnoise.com',
-                success: function(data) {
-                    $('<div/>').html(data).find('.flattr-count').clone().appendTo('footer')
+            var oscillator = audioLib.Oscillator(60, 0.15);
+            var osc_runner = function() {
+                if (!ui_active) {
+                    oscillator.generate();
+                    noise.setVolume(last_userdef_volume + oscillator.getMix()*10);
+                    volume_knob.setValue(last_userdef_volume + oscillator.getMix()*10);
                 }
-            });
+                setTimeout(osc_runner, 16); // 16ms = approx. 60Hz
+            }
+            osc_runner();
+
         </script>
     </body>
 </html>
