@@ -1,11 +1,15 @@
 <html>
     <head>
         <title>noise.js demo</title>
-        <link rel="stylesheet" type="text/css" href="http://static.flowplayer.org/tools/demos/rangeinput/css/skin1.css"/>
+        <link rel="stylesheet" type="text/css" href="css/slider.css"/>
+        <link rel="stylesheet" type="text/css" href="css/dark.css"/>
+        <link href='http://fonts.googleapis.com/css?family=Vast+Shadow' rel='stylesheet' type='text/css'>
     </head>
     <body>
-        <header>wall of noise</header>
-        <div><input type="range" id="vol" min="0" max="100" value="75" /><div>
+        <div id="container">
+            <header>wall of noise</header>
+            <input type="range" id="vol" min="0" max="100" value="75" />
+        </div>
 
         <script type="text/javascript" src="../lib/audiolib.js/lib/audiolib.js"></script>
         <script type="text/javascript" src="../noise.js"></script>
@@ -22,7 +26,7 @@
             var noise = new Noise();
             noise.setVolume(75);
             noise.addSource(audioLib.Noise, "brown");
-            noise.addSource(audioLib.Binaural, 340, 5);
+            noise.addSource(audioLib.Binaural, 100, 10);
         </script>
     </body>
 </html>

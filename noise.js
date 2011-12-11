@@ -51,9 +51,11 @@
                     this.sources[j].generate();
                     for (var c=0; c<chans; c++) {
                         buffer[i+c] += this.sources[j].getMix(c);
-                        buffer[i+c] *= this.actualVolume;
                     } // each channel
                 } // each source
+                for (var c=0; c<chans; c++) {
+                    buffer[i+c] *= this.actualVolume;
+                }
             } // each sample
         }
 
