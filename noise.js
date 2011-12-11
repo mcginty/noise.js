@@ -4,74 +4,57 @@
 *
 * pink noise generation based off of http://sampo.kapsi.fi/PinkNoise/
 */
-var noise = noise || {};
-(function(window, document, undefined) {
-    noise.ColorNoise = function() {
+    var Noise = function() {
         var self = this;
 
         // states
         this.active = false;
 
         //TODO: move when separating lower-level audio libraries from specific synthesizers.
-        this.bufferSize = 16384; //bytes
-        this.sampleRate = 44100; //Hz
-    };
 
-    noise.ColorNoise.prototype = {
-        initialize : function(options) {
+        this.dev = audioLib.Sink(
+            function(buffers, channels) { self.generateBuffer(buffers, channels); },
+            2 //Stereo
+        );
+        this.bufferSize = this.dev.bufferSize;
+        this.sampleRate = this.dev.sampleRate;
+        this.limiter = audioLib.Limiter(this.sampleRate);
+        this.volume = 100;
+        this.actualVolume = 100;
+
+        this.sources = [];
+    }
+
+    Noise.prototype = {
+        addSource : function(source) {
+            console.log("Adding sound source \""+source().name+"\". Total: " + (this.sources.length+1));
+            console.log(arguments);
             var self = this;
-            if (options) {
-                if ("alpha" in options) {
-                    this.alpha = options.alpha;
-                }
-
-                if ("poles" in options) {
-                    this.poles = options.poles;
-                }
-            }
-
-            this.values = new Array(this.poles);
-            for (var i=0; i<this.poles; i++) {
-                this.values[i] = 0;
-            }
-
-            var a = 1.0;
-            for (var i=0; i<this.poles; i++) {
-                a = (i - this.alpha/2) * a / (i+1);
-                this.multipliers[i] = a;
-            }
-
-            // Fill in the history with random values
-            for (var i=0; i<5*this.poles; i++) {
-                this.nextValue();
-            }
-            //var dev = audioLib.Sink(function(buf) { self.gen(buf); }, 1, self.bufferSize, self.sampleRate);
+            //TODO: support infinite arguments, not some magic "3" number.
+            this.sources.push(source(this.sampleRate, arguments[1], arguments[2], arguments[3]));
         },
 
-        nextValue : function() {
-
-            // TODO: add option for gaussian distribution
-            var x = Math.random() - 0.5;
-
-            for (var i=0; i < this.poles; i++) {
-                x -= this.multipliers[i] * this.values[i];
-            }
-
-            // Delete the last value
-            for (var i=this.poles-1; i>0; i--) {
-                this.values[i] = this.values[i-1];
-            }
-
-            // Insert x into beginning of array
-            this.values[0] = x;
-            return x;
+        //TODO: make safer
+        removeSource : function(source) {
+            console.log("Removing source \""+source().name+"\".");
+            this.sources.splice(this.sources.indexOf(source),1);
         },
 
-        gen : function(sampleBuffer) {
-            for (var i=0; i<sampleBuffer.length; i++) {
-                sampleBuffer[i] = audioLib.Noise().brown();
-            }
+        setVolume : function(volume) {
+            this.volume = volume;
+            this.actualVolume = (this.volume*this.volume*this.volume)/(1000000);
+        },
+
+        generateBuffer : function(buffer, chans) {
+            for (var i=0; i<buffer.length; i+=chans) {
+                for (var j=0; j<this.sources.length; j++) {
+                    this.sources[j].generate();
+                    for (var c=0; c<chans; c++) {
+                        buffer[i+c] += this.sources[j].getMix(c);
+                        buffer[i+c] *= this.actualVolume;
+                    } // each channel
+                } // each source
+            } // each sample
         }
 
     };
-})(this,this.document);

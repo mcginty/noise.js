@@ -1,14 +1,28 @@
 <html>
     <head>
         <title>noise.js demo</title>
+        <link rel="stylesheet" type="text/css" href="http://static.flowplayer.org/tools/demos/rangeinput/css/skin1.css"/>
     </head>
     <body>
-        noise.js test.
+        <header>wall of noise</header>
+        <div><input type="range" id="vol" min="0" max="100" value="75" /><div>
+
         <script type="text/javascript" src="../lib/audiolib.js/lib/audiolib.js"></script>
         <script type="text/javascript" src="../noise.js"></script>
+        <script type="text/javascript" src="../binaural.js"></script>
+        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+        <script type="text/javascript" src="http://cdn.jquerytools.org/1.2.6/full/jquery.tools.min.js"></script>
         <script type="text/javascript">
-            var noise = new noise.ColorNoise();
-                noise.initialize();
+            $(":range").rangeinput({
+                onSlide: function(e,v) {
+                    noise.setVolume(v);
+                },
+                speed: 1000
+            });
+            var noise = new Noise();
+            noise.setVolume(75);
+            noise.addSource(audioLib.Noise, "brown");
+            noise.addSource(audioLib.Binaural, 340, 5);
         </script>
     </body>
 </html>
