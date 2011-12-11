@@ -7,9 +7,12 @@
     </head>
     <body>
         <div id="container">
-            <header>wall of noise</header>
+            <header><span class="smallname">temple of noise</span></header>
+            <div id="volsym">vol</div>
             <input type="range" id="vol" min="0" max="100" value="75" />
         </div>
+        <footer>
+        </footer>
 
         <script type="text/javascript" src="../lib/audiolib.js/lib/audiolib.js"></script>
         <script type="text/javascript" src="../noise.js"></script>
@@ -26,7 +29,14 @@
             var noise = new Noise();
             noise.setVolume(75);
             noise.addSource(audioLib.Noise, "brown");
-            noise.addSource(audioLib.Binaural, 100, 10);
+            noise.addSource(audioLib.Binaural, 200, 10);
+
+            $.ajax({
+                url: 'https://api.flattr.com/button/view/?url=http%3A%2F%2Fofnoise.com',
+                success: function(data) {
+                    $('<div/>').html(data).find('.flattr-count').clone().appendTo('footer')
+                }
+            });
         </script>
     </body>
 </html>

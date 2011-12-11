@@ -1,4 +1,16 @@
-
+#volsym {
+	display:block;
+	float:left;
+	font-family: "Helvetica Neue";
+	font-weight: 100;
+	top:-3px;
+	text-shadow: 0px 0px 5px rgba(255,255,255,0.6);
+	color: rgba(255,255,255,0.1);
+	font-size:2em;
+	margin:0 15px 0 0;
+	text-align:center;
+	width:50px;
+}
 /* slider root element */
 .slider { 
 	background:rgba(255,255,255,0.1); 
@@ -6,7 +18,7 @@
 	position:relative; 
 	cursor:pointer;
 	border:1px solid #333;
-	width:880px;
+	width:800px;
 	float:left; 
 	clear:right;
 	margin-top:10px;
