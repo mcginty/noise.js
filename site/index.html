@@ -7,7 +7,7 @@
     </head>
     <body>
         <div id="container">
-            <header><span class="smallname">temple of noise</span></header>
+            <header>of noise</header>
             <div id="volsym">vol</div>
             <input type="range" id="vol" min="0" max="100" value="75" />
         </div>
@@ -21,10 +21,8 @@
             var ui_active=false;
             $(":range").rangeinput({
                 change: function(e,v) {
-                    if(ui_active) {
-                        noise.setVolume(v);
-                        last_userdef_volume = v;
-                    }
+                    noise.setVolume(v);
+                    last_userdef_volume = v;
                 },
                 onSlide: function(e,v) {
                     if(ui_active) {
@@ -36,24 +34,35 @@
                 speed: 1000//ms on click
             });
             var volume_knob = $(":range").data("rangeinput")
-            $(".handle").mousedown(function() {ui_active = true;});
-            $(".handle").mouseup(function() {ui_active = false; oscillator.reset();});
+            $(".handle").mousedown(function() {
+                ui_active = true;
+                temp_userdef_volume = last_userdef_volume;
+            });
+            $(".handle").mouseup(function() {
+                ui_active = false;
+                // if the user lowered the volume, it sounds better for the oscillator to
+                // start off half-phase in.
+                oscillator.reset(last_userdef_volume < temp_userdef_volume ? Math.PI*2 : 0);
+            });
 
 
             var noise = new Noise();
             noise.setVolume(75);
             var last_userdef_volume = 75;
+            var temp_userdef_volume = 75;
             noise.addSource(audioLib.Noise, "brown");
-            noise.addSource(audioLib.Binaural, 200, 10);
+            //noise.addSource(audioLib.Binaural, 200, 10);
 
-            var oscillator = audioLib.Oscillator(60, 0.15);
+            var oscillator = audioLib.Oscillator(25, 0.15);
+            var ui_skip = true;
             var osc_runner = function() {
                 if (!ui_active) {
                     oscillator.generate();
-                    noise.setVolume(last_userdef_volume + oscillator.getMix()*10);
-                    volume_knob.setValue(last_userdef_volume + oscillator.getMix()*10);
+                    var translated_volume = last_userdef_volume + oscillator.getMix()*10;
+                    noise.setVolume(translated_volume);
+                    volume_knob.setValue(translated_volume);
                 }
-                setTimeout(osc_runner, 16); // 16ms = approx. 60Hz
+                setTimeout(osc_runner, 40); // 16ms = approx. 60Hz
             }
             osc_runner();
 
