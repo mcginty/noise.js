@@ -51,7 +51,7 @@
             var last_userdef_volume = 75;
             var temp_userdef_volume = 75;
             noise.addSource(audioLib.Noise, "brown");
-            //noise.addSource(audioLib.Binaural, 200, 10);
+            noise.addSource(audioLib.Binaural, 200, 10);
 
             var oscillator = audioLib.Oscillator(25, 0.15);
             var ui_skip = true;
