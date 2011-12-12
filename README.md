@@ -1,9 +1,26 @@
-noise.js will kill you
-======================
-An experiment with the new Web Audio API for ambient noise synthesis. It's like acid for the brain if you're in the right mood.
+noise.js will kill you and cure cancer
+======================================
+A platform for creating walls of ambient synthesized noise.
 
-supported noise
----------------
+how i use
+=========
+```javascript
+var noise = new Noise();
+
+// add an audioLib generator and any arguments for said generator.
+// it will be initialized by noise.js and stored and cared for
+// with utmost respect.
+noise.addSource(audioLib.Noise, "brown");
+
+// what's that? one noise not good enough for you?
+// start a binaural beat generator at 200Hz with 10Hz spread
+// (200Hz in left ear, 210Hz in right ear)
+noise.addSource(audioLib.Binaural, 200, 10)
+
+noise.setVolume(75); // pump that shit up
+```
+That's it! Sound should be spewing out of your overpriced stupid looking Beats Audio Headphones in Web Audio API-supported browsers.
+
 + White/Pink/Brown noise
 + Binaural beats
 
@@ -25,6 +42,6 @@ LICENSE
 	as the name is changed.
 
     DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
-  	TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
+    TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
 
- 	0. You just DO WHAT THE FUCK YOU WANT TO.
+    0. You just DO WHAT THE FUCK YOU WANT TO.
