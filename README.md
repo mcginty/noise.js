@@ -25,7 +25,7 @@ That's it! Sound should be spewing out of your overpriced stupid looking Beats A
 
 + White/Pink/Brown noise
 + Binaural beats
-
+	
 LICENSE
 =======
 	DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE

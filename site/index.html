@@ -3,68 +3,82 @@
         <title>noise.js demo</title>
         <link rel="stylesheet" type="text/css" href="css/slider.css"/>
         <link rel="stylesheet" type="text/css" href="css/dark.css"/>
-        <link href='http://fonts.googleapis.com/css?family=Vast+Shadow' rel='stylesheet' type='text/css'>
+        <link rel="stylesheet" type="text/css" href="css/jquery-ui-1.8.16.custom.css"/>
+        <link href='http://fonts.googleapis.com/css?family=Lato:100' rel='stylesheet' type='text/css'>
     </head>
     <body>
         <div id="container">
-            <header>of noise</header>
-            <div id="volsym">vol</div>
-            <input type="range" id="vol" min="0" max="100" value="75" />
+            <header><span class="subtag">bed</span> of noise</header>
+            <img src="img/slightdrop.png" />
+            <div id="vol"></div>
         </div>
         <footer>
         </footer>
 
         <script type="text/javascript" src="../noise.min.js"></script>
         <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-        <script type="text/javascript" src="http://cdn.jquerytools.org/1.2.6/full/jquery.tools.min.js"></script>
+        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js"></script>
         <script type="text/javascript">
-            var ui_active=false;
-            $(":range").rangeinput({
-                change: function(e,v) {
-                    noise.setVolume(v);
-                    last_userdef_volume = v;
-                },
-                onSlide: function(e,v) {
-                    if(ui_active) {
-                        noise.setVolume(v);
-                        last_userdef_volume = v;
-                        console.log("User changed value to " + v);
+            $(function() {
+                var $vol = $("#vol");
+                $vol.slider({
+                    value : 75,
+                    min: 0,
+                    max: 100,
+                    step: 0.1,
+                    orientation : "horizontal",
+                    animate : 1000,
+                    slide: function() {
+                        var v = $(this).slider("value");
+                        console.log("slide to "+v);
+                        if (ui_active) {
+                            noise.setVolume(v);
+                            last_userdef_volume = v;
+                        }
+                    },
+                    change: function() {
+                        var v = $(this).slider("value");
+                        console.log("change to "+v);
+                        if (ui_active) {
+                            noise.setVolume(v);
+                            last_userdef_volume = v;
+                        }
                     }
-                },
-                speed: 1000//ms on click
-            });
-            var volume_knob = $(":range").data("rangeinput")
-            $(".handle").mousedown(function() {
-                ui_active = true;
-                temp_userdef_volume = last_userdef_volume;
-            });
-            $(".handle").mouseup(function() {
-                ui_active = false;
-                // if the user lowered the volume, it sounds better for the oscillator to
-                // start off half-phase in.
-                oscillator.reset(last_userdef_volume < temp_userdef_volume ? Math.PI*2 : 0);
-            });
+                });
+                var ui_active=false;
+                $(".ui-slider-handle").mousedown(function() {
+                    console.log("mousedown");
+                    ui_active = true;
+                    temp_userdef_volume = last_userdef_volume;
+                });
+                $(".ui-slider-handle").mouseup(function() {
+                    ui_active = false;
+                    // if the user lowered the volume, it sounds better for the oscillator to
+                    // start off half-phase in.
+                    oscillator.reset(last_userdef_volume < temp_userdef_volume ? Math.PI*2 : 0);
+                });
 
 
-            var noise = new Noise();
-            noise.setVolume(75);
-            var last_userdef_volume = 75;
-            var temp_userdef_volume = 75;
-            noise.addSource(audioLib.Noise, "brown");
-            noise.addSource(audioLib.Binaural, 200, 10);
+                var noise = new Noise();
+                noise.setVolume(75);
+                var last_userdef_volume = 75;
+                var temp_userdef_volume = 75;
+                noise.addSource(audioLib.Noise, "brown");
+                noise.addSource(audioLib.Binaural, 200, 10);
 
-            var oscillator = audioLib.Oscillator(25, 0.15);
-            var ui_skip = true;
-            var osc_runner = function() {
-                if (!ui_active) {
-                    oscillator.generate();
-                    var translated_volume = last_userdef_volume + oscillator.getMix()*10;
-                    noise.setVolume(translated_volume);
-                    volume_knob.setValue(translated_volume);
+                var oscillator = audioLib.Oscillator(25, 0.15);
+                var ui_skip = true;
+                var osc_runner = function() {
+                    if (!ui_active) {
+                        oscillator.generate();
+                        var translated_volume = last_userdef_volume + oscillator.getMix()*10;
+                        noise.setVolume(translated_volume);
+                        $vol.slider("value",translated_volume);
+                    }
+                    setTimeout(osc_runner, 40); // 16ms = approx. 60Hz
                 }
-                setTimeout(osc_runner, 40); // 16ms = approx. 60Hz
-            }
-            osc_runner();
+                osc_runner();
+            });
 
         </script>
     </body>
