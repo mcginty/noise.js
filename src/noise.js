@@ -5,10 +5,10 @@
     var Noise = function() {
         var self = this;
 
-        /* 
+        /*
          * Device initialization and information
          */
-        
+
         // for details on sinks, see: https://github.com/jussi-kalliokoski/sink.js
         this.dev = audioLib.Sink(
             function(buffers, channels) { self.generateBuffer(buffers, channels); },
@@ -32,12 +32,24 @@
          * add an audioLib generator function to the output.
          * to make your own, see: https://github.com/jussi-kalliokoski/audiolib.js/blob/master/specs/generators.md
          */
-        addSource : function(source) {
+        addSource : function(source, opts) {
+            console.log("addSource called.");
             console.log("Adding sound source \""+source().name+"\". Total: " + (this.sources.length+1));
             console.log(arguments);
             var self = this;
-            //TODO: support infinite arguments, not some magic "3" number.
-            this.sources.push(source(this.sampleRate, arguments[1], arguments[2], arguments[3]));
+                opts = {
+                    sampleRate: this.sampleRate
+                };
+            }
+            else {
+                opts['sampleRate'] = this.sampleRate;
+            }
+
+            console.log(opts);
+            this.sources.push({
+                volume: 100,
+                func: source(opts)
+            });
         },
 
         //TODO: make safer
@@ -81,5 +93,4 @@
                 }
             } // each sample
         }
-
     };

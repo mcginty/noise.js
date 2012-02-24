@@ -1,6 +1,6 @@
-noise.js will kill you and cure cancer
-======================================
-A retardedly simple platform for creating walls of ambient synthesized noise.
+noise.js will cure cancer
+=========================
+A super simple platform for creating walls of ambient synthesized noise.
 
 how i use
 =========
@@ -28,6 +28,8 @@ That's it! Sound should be spewing out of your overpriced stupid looking Beats A
 	
 LICENSE
 =======
+Simplicity at its finest:
+
 	DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
 	Version 2, December 2004
 
