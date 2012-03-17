@@ -1,7 +1,7 @@
 JS_NAME = "noise.js"
 JS_MIN_NAME = "noise.min.js"
 SRC_FOLDER = "src"
-GEN_FOLDER = "gen"
+GEN_FOLDER = "."
 CLOSURE_LOCATION = File.join("bin", "compiler.jar")
 
 OUT_JS_PATH = File.join(GEN_FOLDER, JS_NAME)

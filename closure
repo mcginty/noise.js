@@ -1,1 +1,0 @@
-java -jar bin/compiler.jar --js noise.compiled.js --js_output_file noise.min.js --compilation_level AVANCED_OPTIMIZATIONS
