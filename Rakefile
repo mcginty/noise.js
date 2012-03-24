@@ -1,5 +1,10 @@
+require 'rake/clean'
+
 JS_NAME = "noise.js"
 JS_MIN_NAME = "noise.min.js"
+CLEAN.include('./'+JS_NAME);
+CLEAN.include('./'+JS_MIN_NAME);
+
 SRC_FILES = [
     "external/audiolib.js",
     "src/binaural.js",
@@ -11,13 +16,12 @@ CLOSURE_LOCATION = File.join("bin", "compiler.jar")
 OUT_JS_PATH = File.join(GEN_FOLDER, JS_NAME)
 OUT_JS_MIN_PATH = File.join(GEN_FOLDER, JS_MIN_NAME)
 
-task :default => [:join_js_files, :closure_compile] do
+task :default => [:build, :minify] do
     puts "Running default build."
 end
 
 desc "Combine the various javascript files into one for minimization."
-task :join_js_files do
-    puts "Deleting old compiled #{JS_NAME} from directory #{GEN_FOLDER}"
+task :build => :clean do
     begin
         File.delete(File.join(GEN_FOLDER, JS_NAME))
     rescue
@@ -41,8 +45,8 @@ task :join_js_files do
 end
 
 desc "Minimize our concatenated javascript files into one tiny file."
-task :closure_compile do
-    puts "Using Closure to compile JS to a minified version."
+task :minify do
+    puts "Minifying with Closure compiler."
     `java -jar #{CLOSURE_LOCATION} --language_in=ECMASCRIPT5 --js #{OUT_JS_PATH} --js_output_file #{OUT_JS_MIN_PATH}`
     puts "Successfully compiled to #{OUT_JS_MIN_PATH}"
 end
