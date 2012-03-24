@@ -1,6 +1,10 @@
 JS_NAME = "noise.js"
 JS_MIN_NAME = "noise.min.js"
-SRC_FOLDER = "src"
+SRC_FILES = [
+    "external/audiolib.js",
+    "src/binaural.js",
+    "src/noise.js"
+]
 GEN_FOLDER = "."
 CLOSURE_LOCATION = File.join("bin", "compiler.jar")
 
@@ -23,7 +27,7 @@ task :join_js_files do
     puts "Compiling all the JS files into one monolith."
     open(OUT_JS_PATH, 'a') do |f|
         # recursively go through each file in the source directory
-        Dir.glob(File.join(SRC_FOLDER, "**", "*")) do |src_file|
+        SRC_FILES.each do |src_file|
             puts " - Appending #{src_file}"
             # copy all the lines of that file, appending it to the compiled target
             open(src_file, 'r') do |src_f|
@@ -39,6 +43,6 @@ end
 desc "Minimize our concatenated javascript files into one tiny file."
 task :closure_compile do
     puts "Using Closure to compile JS to a minified version."
-    `java -jar #{CLOSURE_LOCATION} --js #{OUT_JS_PATH} --js_output_file #{OUT_JS_MIN_PATH}`
+    `java -jar #{CLOSURE_LOCATION} --language_in=ECMASCRIPT5 --js #{OUT_JS_PATH} --js_output_file #{OUT_JS_MIN_PATH}`
     puts "Successfully compiled to #{OUT_JS_MIN_PATH}"
 end
