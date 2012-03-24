@@ -1903,47 +1903,6 @@ function LP12Filter(samplerate, cutoff, resonance){
 	calcCoeff();
 }
 /**
- * Creates a new Binaural Beat module.
- * See: http://en.wikipedia.org/wiki/Binaural_beats
-*/
-
-function Binaural(sampleRate, freq, spread) {
-    var self          = this;
-    self.frequency    = isNaN(freq)   ? 440 : freq;
-    self.spread       = isNaN(spread) ? 10  : spread;
-    self.sampleRate   = sampleRate;
-};
-
-Binaural.prototype = {
-    sampleRate:  44100,
-    frequency:   440,
-    spread:      10,
-    phaseOffset: 0,
-    pulseWidth:  0.5,
-    fm:          0,
-    phase:       [0,0],
-    _p:          [0,0],
-
-    generate: function(){
-        var self = this,
-            f    = [+self.frequency,+self.frequency+self.spread],
-            pw   = self.pulseWidth,
-            p    = self.phase;
-        f[0] += f[0] * self.fm;
-        f[1] += f[1] * self.fm;
-        self.phase[0]   = (p[0] + f[0] / self.sampleRate / 2) % 1;
-        self.phase[1]   = (p[1] + f[1] / self.sampleRate / 2) % 1;
-        p[0]            = (self.phase[0] + self.phaseOffset) % 1;
-        p[1]            = (self.phase[1] + self.phaseOffset) % 1;
-        self._p[0]      = p[0] < pw ? p[0] / pw : (p[0]-pw) / (1-pw);
-        self._p[1]      = p[1] < pw ? p[1] / pw : (p[1]-pw) / (1-pw);
-    },
-
-    getMix: function(channelNumber){
-        return Math.sin(this._p[channelNumber] * Math.PI*2);
-    }
-};
-/**
  * @generator
  *
  * @arg =!sampleRate
@@ -2864,7 +2823,7 @@ SinkClass.prototype = Sink.prototype = {
 
 		this.isReady = true;
 		this.emit('ready', []);
-	},
+	}
 };
 
 /**
@@ -2982,63 +2941,12 @@ EventEmitter.prototype = {
 			this._listeners[name].length || delete this._listeners[name];
 		}
 		return this;
-	},
+	}
 };
 
 Sink.EventEmitter = EventEmitter;
 
 EventEmitter.call(Sink);
-
-}(this.Sink));
-(function (Sink) {
-
-/**
- * Creates a timer with consistent (ie. not clamped) intervals even in background tabs.
- * Uses inline workers to achieve this. If not available, will revert to regular timers.
- *
- * @static Sink
- * @name doInterval
- *
- * @arg {Function} callback The callback to trigger on timer hit.
- * @arg {Number} timeout The interval between timer hits.
- *
- * @return {Function} A function to cancel the timer.
-*/
-
-Sink.doInterval = function (callback, timeout) {
-	var timer, kill;
-
-	function create (noWorker) {
-		if (Sink.inlineWorker.working && !noWorker) {
-			timer = Sink.inlineWorker('setInterval(function (){ postMessage("tic"); }, ' + timeout + ');');
-			timer.onmessage = function (){
-				callback();
-			};
-			kill = function () {
-				timer.terminate();
-			};
-		} else {
-			timer = setInterval(callback, timeout);
-			kill = function (){
-				clearInterval(timer);
-			};
-		}
-	}
-
-	Sink.inlineWorker.ready ? create() : Sink.inlineWorker.on('ready', function () {
-		create();
-	});
-
-	return function () {
-		if (!kill) {
-			Sink.inlineWorker.ready || Sink.inlineWorker.on('ready', function () {
-				kill && kill();
-			});
-		} else {
-			kill();
-		}
-	};
-};
 
 }(this.Sink));
 (function (Sink) {
@@ -3079,24 +2987,24 @@ SinkError.prototype.toString = function () {
 
 SinkError[0x01] = {
 	message: 'No such error code.',
-	explanation: 'The error code does not exist.',
+	explanation: 'The error code does not exist.'
 };
 SinkError[0x02] = {
 	message: 'No audio sink available.',
-	explanation: 'The audio device may be busy, or no supported output API is available for this browser.',
+	explanation: 'The audio device may be busy, or no supported output API is available for this browser.'
 };
 
 SinkError[0x10] = {
 	message: 'Buffer underflow.',
-	explanation: 'Trying to recover...',
+	explanation: 'Trying to recover...'
 };
 SinkError[0x11] = {
 	message: 'Critical recovery fail.',
-	explanation: 'The buffer underflow has reached a critical point, trying to recover, but will probably fail anyway.',
+	explanation: 'The buffer underflow has reached a critical point, trying to recover, but will probably fail anyway.'
 };
 SinkError[0x12] = {
 	message: 'Buffer size too large.',
-	explanation: 'Unable to allocate the buffer due to excessive length, please try a smaller buffer. Buffer size should probably be smaller than the sample rate.',
+	explanation: 'Unable to allocate the buffer due to excessive length, please try a smaller buffer. Buffer size should probably be smaller than the sample rate.'
 };
 
 Sink.Error = SinkError;
@@ -3193,6 +3101,57 @@ inlineWorker.test();
 (function (Sink) {
 
 /**
+ * Creates a timer with consistent (ie. not clamped) intervals even in background tabs.
+ * Uses inline workers to achieve this. If not available, will revert to regular timers.
+ *
+ * @static Sink
+ * @name doInterval
+ *
+ * @arg {Function} callback The callback to trigger on timer hit.
+ * @arg {Number} timeout The interval between timer hits.
+ *
+ * @return {Function} A function to cancel the timer.
+*/
+
+Sink.doInterval = function (callback, timeout) {
+	var timer, kill;
+
+	function create (noWorker) {
+		if (Sink.inlineWorker.working && !noWorker) {
+			timer = Sink.inlineWorker('setInterval(function (){ postMessage("tic"); }, ' + timeout + ');');
+			timer.onmessage = function (){
+				callback();
+			};
+			kill = function () {
+				timer.terminate();
+			};
+		} else {
+			timer = setInterval(callback, timeout);
+			kill = function (){
+				clearInterval(timer);
+			};
+		}
+	}
+
+	Sink.inlineWorker.ready ? create() : Sink.inlineWorker.on('ready', function () {
+		create();
+	});
+
+	return function () {
+		if (!kill) {
+			Sink.inlineWorker.ready || Sink.inlineWorker.on('ready', function () {
+				kill && kill();
+			});
+		} else {
+			kill();
+		}
+	};
+};
+
+}(this.Sink));
+(function (Sink) {
+
+/**
  * A Sink class for the Mozilla Audio Data API.
 */
 
@@ -3276,36 +3235,10 @@ Sink.sinks('audiodata', function () {
 
 	getPlaybackTime: function () {
 		return this._audio.mozCurrentSampleOffset() / this.channelCount;
-	},
+	}
 }, false, true);
 
 Sink.sinks.moz = Sink.sinks.audiodata;
-
-}(this.Sink));
-(function (Sink) {
-
-/**
- * A dummy Sink. (No output)
-*/
-
-Sink.sinks('dummy', function () {
-	var 	self		= this;
-	self.start.apply(self, arguments);
-	
-	function bufferFill () {
-		var	soundData = new Float32Array(self.bufferSize * self.channelCount);
-		self.process(soundData, self.channelCount);
-	}
-
-	self._kill = Sink.doInterval(bufferFill, self.bufferSize / self.sampleRate * 1000);
-
-	self._callback		= bufferFill;
-}, {
-	kill: function () {
-		this._kill();
-		this.emit('kill');
-	},
-}, true);
 
 }(this.Sink));
 (function (Sink, sinks) {
@@ -3350,7 +3283,7 @@ sinks('wav', function () {
 				data:		soundData,
 				sampleRate:	self.sampleRate,
 				channelCount:	self.channelCount,
-				bytesPerSample:	self.quality,
+				bytesPerSample:	self.quality
 			})
 		));
 
@@ -3367,7 +3300,7 @@ sinks('wav', function () {
 	getPlaybackTime: function () {
 		var audio = this._audio;
 		return (audio.currentFrame ? audio.currentFrame.currentTime * this.sampleRate : 0) + audio.samples;
-	},
+	}
 });
 
 function wavAudio () {
@@ -3402,10 +3335,36 @@ wavAudio.prototype = {
 		this.nextFrame.addEventListener('ended', this._onended, true);
 
 		this.hasNextFrame = true;
-	},
+	}
 };
 
 sinks.wav.wavAudio = wavAudio;
+
+}(this.Sink));
+(function (Sink) {
+
+/**
+ * A dummy Sink. (No output)
+*/
+
+Sink.sinks('dummy', function () {
+	var 	self		= this;
+	self.start.apply(self, arguments);
+	
+	function bufferFill () {
+		var	soundData = new Float32Array(self.bufferSize * self.channelCount);
+		self.process(soundData, self.channelCount);
+	}
+
+	self._kill = Sink.doInterval(bufferFill, self.bufferSize / self.sampleRate * 1000);
+
+	self._callback		= bufferFill;
+}, {
+	kill: function () {
+		this._kill();
+		this.emit('kill');
+	}
+}, true);
 
 }(this.Sink));
  (function (sinks, fixChrome82795) {
@@ -3472,7 +3431,7 @@ sinks('webaudio', function (readFn, channelCount, bufferSize, sampleRate) {
 
 	getPlaybackTime: function () {
 		return this._context.currentTime * this.sampleRate;
-	},
+	}
 }, false, true);
 
 sinks.webkit = sinks.webaudio;
@@ -3587,8 +3546,91 @@ Sink.sinks('worker', function () {
 		this.bufferSize		= b.length * this.channelCount;
 		this.ready		= true;
 		this.emit('ready', []);
-	},
+	}
 });
+
+}(this.Sink));
+(function (Sink) {
+
+(function(){
+
+/**
+ * If method is supplied, adds a new interpolation method to Sink.interpolation, otherwise sets the default interpolation method (Sink.interpolate) to the specified property of Sink.interpolate.
+ *
+ * @arg {String} name The name of the interpolation method to get / set.
+ * @arg {Function} !method The interpolation method.
+*/
+
+function interpolation(name, method) {
+	if (name && method) {
+		interpolation[name] = method;
+	} else if (name && interpolation[name] instanceof Function) {
+		Sink.interpolate = interpolation[name];
+	}
+	return interpolation[name];
+}
+
+Sink.interpolation = interpolation;
+
+
+/**
+ * Interpolates a fractal part position in an array to a sample. (Linear interpolation)
+ *
+ * @param {Array} arr The sample buffer.
+ * @param {number} pos The position to interpolate from.
+ * @return {Float32} The interpolated sample.
+*/
+interpolation('linear', function (arr, pos) {
+	var	first	= Math.floor(pos),
+		second	= first + 1,
+		frac	= pos - first;
+	second		= second < arr.length ? second : 0;
+	return arr[first] * (1 - frac) + arr[second] * frac;
+});
+
+/**
+ * Interpolates a fractal part position in an array to a sample. (Nearest neighbour interpolation)
+ *
+ * @param {Array} arr The sample buffer.
+ * @param {number} pos The position to interpolate from.
+ * @return {Float32} The interpolated sample.
+*/
+interpolation('nearest', function (arr, pos) {
+	return pos >= arr.length - 0.5 ? arr[0] : arr[Math.round(pos)];
+});
+
+interpolation('linear');
+
+}());
+
+
+/**
+ * Resamples a sample buffer from a frequency to a frequency and / or from a sample rate to a sample rate.
+ *
+ * @static Sink
+ * @name resample
+ *
+ * @arg {Buffer} buffer The sample buffer to resample.
+ * @arg {Number} fromRate The original sample rate of the buffer, or if the last argument, the speed ratio to convert with.
+ * @arg {Number} fromFrequency The original frequency of the buffer, or if the last argument, used as toRate and the secondary comparison will not be made.
+ * @arg {Number} toRate The sample rate of the created buffer.
+ * @arg {Number} toFrequency The frequency of the created buffer.
+ *
+ * @return The new resampled buffer.
+*/
+Sink.resample	= function (buffer, fromRate /* or speed */, fromFrequency /* or toRate */, toRate, toFrequency) {
+	var
+		argc		= arguments.length,
+		speed		= argc === 2 ? fromRate : argc === 3 ? fromRate / fromFrequency : toRate / fromRate * toFrequency / fromFrequency,
+		l		= buffer.length,
+		length		= Math.ceil(l / speed),
+		newBuffer	= new Float32Array(length),
+		i, n;
+	for (i=0, n=0; i<l; i += speed) {
+		newBuffer[n++] = Sink.interpolate(buffer, i);
+	}
+	return newBuffer;
+};
 
 }(this.Sink));
 (function (Sink) {
@@ -3828,7 +3870,7 @@ Proxy.prototype = {
 		this.offset = 0;
 		Sink.memcpy(this.zeroBuffer, 0, this.buffer, 0);
 		this.emit('audioprocess', [this.buffer, this.channelCount]);
-	},
+	}
 };
 
 Sink.Proxy = Proxy;
@@ -3850,203 +3892,6 @@ Sink.prototype.createProxy = function (bufferSize) {
 
 	return proxy;
 };
-
-}(this.Sink));
-(function (Sink) {
-
-(function(){
-
-/**
- * If method is supplied, adds a new interpolation method to Sink.interpolation, otherwise sets the default interpolation method (Sink.interpolate) to the specified property of Sink.interpolate.
- *
- * @arg {String} name The name of the interpolation method to get / set.
- * @arg {Function} !method The interpolation method.
-*/
-
-function interpolation(name, method) {
-	if (name && method) {
-		interpolation[name] = method;
-	} else if (name && interpolation[name] instanceof Function) {
-		Sink.interpolate = interpolation[name];
-	}
-	return interpolation[name];
-}
-
-Sink.interpolation = interpolation;
-
-
-/**
- * Interpolates a fractal part position in an array to a sample. (Linear interpolation)
- *
- * @param {Array} arr The sample buffer.
- * @param {number} pos The position to interpolate from.
- * @return {Float32} The interpolated sample.
-*/
-interpolation('linear', function (arr, pos) {
-	var	first	= Math.floor(pos),
-		second	= first + 1,
-		frac	= pos - first;
-	second		= second < arr.length ? second : 0;
-	return arr[first] * (1 - frac) + arr[second] * frac;
-});
-
-/**
- * Interpolates a fractal part position in an array to a sample. (Nearest neighbour interpolation)
- *
- * @param {Array} arr The sample buffer.
- * @param {number} pos The position to interpolate from.
- * @return {Float32} The interpolated sample.
-*/
-interpolation('nearest', function (arr, pos) {
-	return pos >= arr.length - 0.5 ? arr[0] : arr[Math.round(pos)];
-});
-
-interpolation('linear');
-
-}());
-
-
-/**
- * Resamples a sample buffer from a frequency to a frequency and / or from a sample rate to a sample rate.
- *
- * @static Sink
- * @name resample
- *
- * @arg {Buffer} buffer The sample buffer to resample.
- * @arg {Number} fromRate The original sample rate of the buffer, or if the last argument, the speed ratio to convert with.
- * @arg {Number} fromFrequency The original frequency of the buffer, or if the last argument, used as toRate and the secondary comparison will not be made.
- * @arg {Number} toRate The sample rate of the created buffer.
- * @arg {Number} toFrequency The frequency of the created buffer.
- *
- * @return The new resampled buffer.
-*/
-Sink.resample	= function (buffer, fromRate /* or speed */, fromFrequency /* or toRate */, toRate, toFrequency) {
-	var
-		argc		= arguments.length,
-		speed		= argc === 2 ? fromRate : argc === 3 ? fromRate / fromFrequency : toRate / fromRate * toFrequency / fromFrequency,
-		l		= buffer.length,
-		length		= Math.ceil(l / speed),
-		newBuffer	= new Float32Array(length),
-		i, n;
-	for (i=0, n=0; i<l; i += speed) {
-		newBuffer[n++] = Sink.interpolate(buffer, i);
-	}
-	return newBuffer;
-};
-
-}(this.Sink));
-(function (Sink) {
-
-Sink.on('init', function (sink) {
-	sink.activeRecordings = [];
-	sink.on('postprocess', sink.recordData);
-});
-
-Sink.prototype.activeRecordings = null;
-
-/**
- * Starts recording the sink output.
- *
- * @method Sink
- * @name record
- *
- * @return {Recording} The recording object for the recording started.
-*/
-Sink.prototype.record = function () {
-	var recording = new Sink.Recording(this);
-	this.emit('record', [recording]);
-	return recording;
-};
-/**
- * Private method that handles the adding the buffers to all the current recordings.
- *
- * @method Sink
- * @method recordData
- *
- * @arg {Array} buffer The buffer to record.
-*/
-Sink.prototype.recordData = function (buffer) {
-	var	activeRecs	= this.activeRecordings,
-		i, l		= activeRecs.length;
-	for (i=0; i<l; i++) {
-		activeRecs[i].add(buffer);
-	}
-};
-
-/**
- * A Recording class for recording sink output.
- *
- * @class
- * @static Sink
- * @arg {Object} bindTo The sink to bind the recording to.
-*/
-
-function Recording (bindTo) {
-	this.boundTo = bindTo;
-	this.buffers = [];
-	bindTo.activeRecordings.push(this);
-}
-
-Recording.prototype = {
-/**
- * Adds a new buffer to the recording.
- *
- * @arg {Array} buffer The buffer to add.
- *
- * @method Recording
-*/
-	add: function (buffer) {
-		this.buffers.push(buffer);
-	},
-/**
- * Empties the recording.
- *
- * @method Recording
-*/
-	clear: function () {
-		this.buffers = [];
-	},
-/**
- * Stops the recording and unbinds it from it's host sink.
- *
- * @method Recording
-*/
-	stop: function () {
-		var	recordings = this.boundTo.activeRecordings,
-			i;
-		for (i=0; i<recordings.length; i++) {
-			if (recordings[i] === this) {
-				recordings.splice(i--, 1);
-			}
-		}
-	},
-/**
- * Joins the recorded buffers into a single buffer.
- *
- * @method Recording
-*/
-	join: function () {
-		var	bufferLength	= 0,
-			bufPos		= 0,
-			buffers		= this.buffers,
-			newArray,
-			n, i, l		= buffers.length;
-
-		for (i=0; i<l; i++) {
-			bufferLength += buffers[i].length;
-		}
-		newArray = new Float32Array(bufferLength);
-		for (i=0; i<l; i++) {
-			for (n=0; n<buffers[i].length; n++) {
-				newArray[bufPos + n] = buffers[i][n];
-			}
-			bufPos += buffers[i].length;
-		}
-		return newArray;
-	},
-};
-
-Sink.Recording = Recording;
 
 }(this.Sink));
 (function (Sink) {
@@ -4248,6 +4093,120 @@ proto.getSyncWriteOffset = function () {
 };
 
 } (this.Sink));
+(function (Sink) {
+
+Sink.on('init', function (sink) {
+	sink.activeRecordings = [];
+	sink.on('postprocess', sink.recordData);
+});
+
+Sink.prototype.activeRecordings = null;
+
+/**
+ * Starts recording the sink output.
+ *
+ * @method Sink
+ * @name record
+ *
+ * @return {Recording} The recording object for the recording started.
+*/
+Sink.prototype.record = function () {
+	var recording = new Sink.Recording(this);
+	this.emit('record', [recording]);
+	return recording;
+};
+/**
+ * Private method that handles the adding the buffers to all the current recordings.
+ *
+ * @method Sink
+ * @method recordData
+ *
+ * @arg {Array} buffer The buffer to record.
+*/
+Sink.prototype.recordData = function (buffer) {
+	var	activeRecs	= this.activeRecordings,
+		i, l		= activeRecs.length;
+	for (i=0; i<l; i++) {
+		activeRecs[i].add(buffer);
+	}
+};
+
+/**
+ * A Recording class for recording sink output.
+ *
+ * @class
+ * @static Sink
+ * @arg {Object} bindTo The sink to bind the recording to.
+*/
+
+function Recording (bindTo) {
+	this.boundTo = bindTo;
+	this.buffers = [];
+	bindTo.activeRecordings.push(this);
+}
+
+Recording.prototype = {
+/**
+ * Adds a new buffer to the recording.
+ *
+ * @arg {Array} buffer The buffer to add.
+ *
+ * @method Recording
+*/
+	add: function (buffer) {
+		this.buffers.push(buffer);
+	},
+/**
+ * Empties the recording.
+ *
+ * @method Recording
+*/
+	clear: function () {
+		this.buffers = [];
+	},
+/**
+ * Stops the recording and unbinds it from it's host sink.
+ *
+ * @method Recording
+*/
+	stop: function () {
+		var	recordings = this.boundTo.activeRecordings,
+			i;
+		for (i=0; i<recordings.length; i++) {
+			if (recordings[i] === this) {
+				recordings.splice(i--, 1);
+			}
+		}
+	},
+/**
+ * Joins the recorded buffers into a single buffer.
+ *
+ * @method Recording
+*/
+	join: function () {
+		var	bufferLength	= 0,
+			bufPos		= 0,
+			buffers		= this.buffers,
+			newArray,
+			n, i, l		= buffers.length;
+
+		for (i=0; i<l; i++) {
+			bufferLength += buffers[i].length;
+		}
+		newArray = new Float32Array(bufferLength);
+		for (i=0; i<l; i++) {
+			for (n=0; n<buffers[i].length; n++) {
+				newArray[bufPos + n] = buffers[i][n];
+			}
+			bufPos += buffers[i].length;
+		}
+		return newArray;
+	}
+};
+
+Sink.Recording = Recording;
+
+}(this.Sink));
 /**
  * Creates an amplitude meter, outputting the amplitude value of the input.
  *
@@ -4617,7 +4576,6 @@ audioLib.Reverb		= Freeverb;
 audioLib.Noise		= Noise;
 audioLib.Oscillator	= Oscillator;
 audioLib.Sampler	= Sampler;
-audioLib.Binaural   = Binaural;
 
 // Processing
 audioLib.Amplitude	= Amplitude;
@@ -4758,12 +4716,12 @@ audioLib.Binaural = audioLib.generators("BinauralTone", function (sampleRate, fr
          */
 
         // for details on sinks, see: https://github.com/jussi-kalliokoski/sink.js
-        var worker = audioLib.AudioWorker(function() {
-            this.dev = audioLib.Sink(
+        //this.worker = audioLib.AudioWorker(function() {
+            self.dev = audioLib.Sink(
                 function(buffers, channels) { self.generateBuffer(buffers, channels); },
                 2 //Stereo
             );
-        }, true);
+        //}, true);
         this.bufferSize = this.dev.bufferSize;
         this.sampleRate = this.dev.sampleRate;
 
@@ -4775,7 +4733,6 @@ audioLib.Binaural = audioLib.generators("BinauralTone", function (sampleRate, fr
                                  // see: http://www.dr-lex.be/info-stuff/volumecontrols.html
 
         this.sources = [];       // current sources of generated audio
-        this.lfo = audioLib.Oscillator(this.sampleRate, 0);
     }
 
     Noise.prototype = {
@@ -4814,10 +4771,6 @@ audioLib.Binaural = audioLib.generators("BinauralTone", function (sampleRate, fr
             // set volume, 0 < volume < 100
             this.volume = (volume > 100 ? 100 : volume) < 0 ? 0 : volume;
             this.actualVolume = (this.volume*this.volume*this.volume)/(1000000);
-        },
-
-        volumeLFO : function(freq) {
-            this.lfo = audioLib.Oscillator(this.sampleRate, freq);
         },
 
         /*

@@ -4,16 +4,17 @@
 */
     var Noise = function() {
         var self = this;
-
         /*
          * Device initialization and information
          */
 
         // for details on sinks, see: https://github.com/jussi-kalliokoski/sink.js
-        this.dev = audioLib.Sink(
-            function(buffers, channels) { self.generateBuffer(buffers, channels); },
-            2 //Stereo
-        );
+        //this.worker = audioLib.AudioWorker(function() {
+            self.dev = audioLib.Sink(
+                function(buffers, channels) { self.generateBuffer(buffers, channels); },
+                2 //Stereo
+            );
+        //}, true);
         this.bufferSize = this.dev.bufferSize;
         this.sampleRate = this.dev.sampleRate;
 
@@ -32,29 +33,23 @@
          * add an audioLib generator function to the output.
          * to make your own, see: https://github.com/jussi-kalliokoski/audiolib.js/blob/master/specs/generators.md
          */
-        addSource : function(source, opts) {
-            console.log("addSource called.");
-            console.log("Adding sound source \""+source().name+"\". Total: " + (this.sources.length+1));
-            console.log(arguments);
-            var self = this;
-                opts = {
-                    sampleRate: this.sampleRate
-                };
-            }
-            else {
-                opts['sampleRate'] = this.sampleRate;
-            }
+        addSource : function(source) {
+            console.log("Adding sound source \""+source().name+"\". Total sources: " + (this.sources.length+1));
 
-            console.log(opts);
-            this.sources.push({
-                volume: 100,
-                func: source(opts)
-            });
+            var args = Array.prototype.slice.call(arguments);
+            args[0] = this.sampleRate; // remove first argument (source) from the arguments list.
+
+            source = { 
+                volume: 100, //TODO: support volume control at source add
+                  func: source.apply(this, args)
+            };
+            this.sources.push(source);
+            return source;
         },
 
         //TODO: make safer
         removeSource : function(source) {
-            console.log("Removing source \""+source().name+"\".");
+            console.log("Removing source \""+source.func.name+"\".");
             this.sources.splice(this.sources.indexOf(source),1);
         },
 
@@ -81,9 +76,9 @@
         generateBuffer : function(buffer, chans) {
             for (var i=0; i<buffer.length; i+=chans) {
                 for (var j=0; j<this.sources.length; j++) {
-                    this.sources[j].generate();
+                    this.sources[j].func.generate();
                     for (var c=0; c<chans; c++) {
-                        buffer[i+c] += this.sources[j].getMix(c);
+                        buffer[i+c] += this.sources[j].func.getMix(c);
                         //TODO: add per-source volume control.
                     } // each channel
                 } // each source

@@ -15,11 +15,12 @@
         <footer>
         </footer>
 
-        <script type="text/javascript" src="../gen/noise.js"></script>
+        <script type="text/javascript" src="../noise.js"></script>
         <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
         <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js"></script>
         <script type="text/javascript">
             $(function() {
+                
                 var $vol = $("#vol");
                 $vol.slider({
                     value : 75,
@@ -30,7 +31,6 @@
                     animate : 1000,
                     slide: function() {
                         var v = $(this).slider("value");
-                        console.log("slide to "+v);
                         if (ui_active) {
                             noise.setVolume(v);
                             last_userdef_volume = v;
@@ -38,7 +38,6 @@
                     },
                     change: function() {
                         var v = $(this).slider("value");
-                        console.log("change to "+v);
                         if (ui_active) {
                             noise.setVolume(v);
                             last_userdef_volume = v;
@@ -61,14 +60,14 @@
 
                 var noise = new Noise();
                 noise.setVolume(75);
+                //noise.volumeLFO(0.15); //Hz
                 var last_userdef_volume = 75;
                 var temp_userdef_volume = 75;
 
-                noise.addSource(audioLib.ColorNoise, {
-                    color: "brown"
-                });
-                noise.addSource(audioLib.Binaural, 200, 10);
-
+                var brown = noise.addSource(audioLib.Noise, "brown");
+                var tenhz = noise.addSource(audioLib.Binaural, 200, 10);
+                //noise.removeSource(brown);
+                console.log(noise);
                 var oscillator = audioLib.Oscillator(25, 0.15);
                 var ui_skip = true;
                 var osc_runner = function() {
@@ -81,6 +80,7 @@
                     setTimeout(osc_runner, 40); // 16ms = approx. 60Hz
                 }
                 osc_runner();
+                
             });
 
         </script>
