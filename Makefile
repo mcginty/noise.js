@@ -1,6 +1,6 @@
 all: rake
-	rake
+	@rake
 rake:
-	(! gem list --local | grep rake && gem install rake) ; true
+	@if ! gem list --local | grep rake > /dev/null; then gem install rake ; fi
 clean:
-	rake clean
+	@rake clean
