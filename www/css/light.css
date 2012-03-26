@@ -1,0 +1,170 @@
+/***********************\
+|* reset               *|-----------------------------------------------------
+\***********************/
+
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed,
+figure, figcaption, footer, header, hgroup,
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 100%;
+    font: inherit;
+    vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure,
+footer, header, hgroup, menu, nav, section {
+    display: block;
+}
+body {
+    line-height: 1;
+}
+ol, ul {
+    list-style: none;
+}
+blockquote, q {
+    quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+    content: '';
+    content: none;
+}
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+/***********************\
+|* main body           *|-----------------------------------------------------
+\***********************/
+
+body {
+    text-align: center;
+    background: url(../img/noize.png) #fff;
+    box-shadow: inset 0 0 100px #444;
+}
+#sqiggledrop {
+    opacity: 0.9;
+}
+#container {
+    margin: 0 auto;
+    width: 960px;
+}
+#vol {
+    margin-top: 250px;
+}
+header {
+    -webkit-transition: all 1s ease-in-out;
+    padding: 0.7em 0 0.1em 0;
+    font-family: "Helvetica Neue", sans-serif;
+    font-weight: 200;
+    /*text-shadow: 0px 0px 5px rgba(255,255,255,0.3);*/
+    font-size: 4em;
+    color: rgba(0,0,0,0.5);
+}
+header:hover {
+    -webkit-transition: all 1s ease-in-out;
+    color: rgba(0,0,0,0.7);
+}
+.subtag {
+    color: darkred;
+}
+footer {
+    position:absolute;
+    bottom:0px;
+    right:0px;
+    opacity: 0.2;
+}
+
+/***********************\
+|* slider              *|-----------------------------------------------------
+\***********************/
+
+#volsym {
+    display:block;
+    float:left;
+    font-family: "Helvetica Neue";
+    font-weight: 100;
+    top:-3px;
+    /*text-shadow: 0px 0px 5px rgba(255,255,255,0.6);*/
+    color: rgba(255,255,255,0.8);
+    font-size:2em;
+    margin:0 15px 0 0;
+    text-align:center;
+    width:50px;
+}
+/* slider root element */
+.slider {
+    background:rgba(255,255,255,0.1);
+    height:9px;
+    position:relative;
+    cursor:pointer;
+    border:1px solid #333;
+    width:800px;
+    float:left;
+    clear:right;
+    margin-top:10px;
+    -moz-border-radius:5px;
+    -webkit-border-radius:5px;
+    box-shadow:inset 0 0 8px rgba(0,0,0,0.5);
+}
+
+/* progress bar (enabled with progress: true) */
+.progress {
+    height:9px;
+    background-color:#C5FF00;
+    display:none;
+    opacity:0.6;
+}
+
+/* drag handle */
+.handle {
+    background:rgba(255,255,255,0.8);
+    height:50px;
+    width:50px;
+    top:-22px;
+    position:absolute;
+    display:block;
+    margin-top:1px;
+    cursor:move;
+    /*box-shadow:0 0 13px rgba(255,255,255,0.3),
+         inset 0 0 13px rgba(255,255,255,0.3),
+         inset 0 0 1px  rgba(255,255,255,0.8);*/
+    border: 1px rgba(255,255,255,0.8);
+    -moz-border-radius:25px;
+    -webkit-border-radius:25px;
+}
+
+/* the input field */
+.range {
+    background: none;
+    float:left;
+    font-family: "Helvetica Neue";
+    font-weight: 100;
+    position:relative;
+    top:-3px;
+    text-shadow: 0px 0px 5px rgba(255,255,255,0.6);
+    color: rgba(255,255,255,0.1);
+    font-size:2em;
+    margin:0 0 0 15px;
+    text-align:center;
+    width:50px;
+    border:none;
+    -moz-border-radius:5px;
+    -webkit-border-radius:5px;
+}
+
+
+
